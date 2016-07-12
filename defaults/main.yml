@@ -1,0 +1,11 @@
+---
+# defaults file for ansible-role-upsource/
+
+upsource_version: "3.0.4389"
+download_directory: "/tmp/"
+upsource_install_folder: "/opt/UpSource"
+upsource_data_path: "{{upsource_install_folder}}/data"
+upsource_user: "upsource"
+upsource_group: "upsource"
+upsource_http_port: "8080"
+

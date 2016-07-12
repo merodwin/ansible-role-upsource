@@ -1,0 +1,49 @@
+---
+# tasks file for ansible-role-upsource/
+
+
+
+
+- name: install unzip
+  become: true
+  apt: name=unzip state=latest
+
+- name: create upsource group
+  become: yes
+  group: name={{upsource_group}} state=present
+
+- name: create upsource user
+  become: yes
+  user: name="{{upsource_user}}" group={{upsource_group}} state=present
+
+- name: download upsource
+  get_url: url="https://download-cf.jetbrains.com/upsource/upsource-{{upsource_version}}.zip" dest="{{download_directory}}/upsource{{upsource_version}}.zip" validate_certs=False
+
+- name: create dir
+  become: true
+  file: path="{{upsource_install_folder}}" state=directory owner="{{upsource_user}}" group="{{upsource_group}}" mode="777"
+
+- name: check if allredy installed
+  stat: path="{{upsource_install_folder}}//upsource-{{upsource_version}}"
+  register: installDir
+
+- name: untar upsource
+  become: yes
+  unarchive: src="{{download_directory}}/upsource{{upsource_version}}.zip" dest="{{upsource_install_folder}}" copy=no
+  when: installDir.stat.exists == False
+
+- name: chown upsourcedir
+  become: true
+  file: path="{{upsource_install_folder}}" state=directory owner="{{upsource_user}}" group="{{upsource_group}}" mode="755" recurse=yes
+
+- name: symlik to latest folder
+  become: true
+  file: dest="{{upsource_install_folder}}/latest" src="{{upsource_install_folder}}//upsource-{{upsource_version}}" state=link owner="{{upsource_user}}" group="{{upsource_group}}" mode="777"
+
+- name: symlik to latest folder
+  become: true
+  file: dest="/etc/init.d/upsource" src="{{upsource_install_folder}}/latest/bin/upsource.sh" state=link owner="{{upsource_user}}" group="{{upsource_group}}" mode="777"
+
+
+
+
