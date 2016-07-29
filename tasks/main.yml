@@ -27,23 +27,46 @@
   stat: path="{{upsource_install_folder}}//upsource-{{upsource_version}}"
   register: installDir
 
-- name: untar upsource
-  become: yes
-  unarchive: src="{{download_directory}}/upsource{{upsource_version}}.zip" dest="{{upsource_install_folder}}" copy=no
-  when: installDir.stat.exists == False
 
-- name: chown upsourcedir
-  become: true
-  file: path="{{upsource_install_folder}}" state=directory owner="{{upsource_user}}" group="{{upsource_group}}" mode="755" recurse=yes
+- block:
 
-- name: symlik to latest folder
-  become: true
-  file: dest="{{upsource_install_folder}}/latest" src="{{upsource_install_folder}}//upsource-{{upsource_version}}" state=link owner="{{upsource_user}}" group="{{upsource_group}}" mode="777"
+  - name: untar upsource
+    become: yes
+    unarchive: src="{{download_directory}}/upsource{{upsource_version}}.zip" dest="{{upsource_install_folder}}" copy=no
+    notify:
+    - restart upsource service
 
-- name: symlik to latest folder
-  become: true
-  file: dest="/etc/init.d/upsource" src="{{upsource_install_folder}}/latest/bin/upsource.sh" state=link owner="{{upsource_user}}" group="{{upsource_group}}" mode="777"
+  - name: chown upsourcedir
+    become: true
+    file: path="{{upsource_install_folder}}" state=directory owner="{{upsource_user}}" group="{{upsource_group}}" mode="755" recurse=yes
 
+  - name: check if allredy installed
+    stat: path="{{upsource_install_folder}}/latest"
+    register: latestDir
+
+  - name: install service
+    template: src=upsource.service.j2 dest=/lib/systemd/system/upsource.service owner=root mode=755
+
+  - name: stop upsource
+    service:
+      name: upsource
+      state: stopped
+    when: latestDir.stat.exists == True
+
+ # - name: rename latest to last
+  #  command:  "mv {{upsource_install_folder}}/latest {{upsource_install_folder}}/last"
+ #   when: latestDir.stat.exists == True
+
+
+  - name: symlik to latest folder
+    become: true
+    file: dest="{{upsource_install_folder}}/latest" src="{{upsource_install_folder}}//upsource-{{upsource_version}}" state=link owner="{{upsource_user}}" group="{{upsource_group}}" mode="777"
+
+  - name: copy old config
+    command:  "cp -r {{upsource_install_folder}}/last/conf {{upsource_install_folder}}/latest/conf"
+    when: latestDir.stat.exists == True
+
+ # when: installDir.stat.exists == False
 
 
 

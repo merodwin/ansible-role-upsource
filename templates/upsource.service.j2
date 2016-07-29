@@ -1,0 +1,13 @@
+[Unit]
+Description=JetBrains Hub
+Requires=network.target
+After=syslog.target network.target
+
+[Service]
+Type=forking
+ExecStart={{upsource_install_folder}}/latest/bin/upsource.sh start
+ExecStop={{upsource_install_folder}}/latest/bin/upsource.sh stop
+User={{upsource_user}}
+
+[Install]
+WantedBy=multi-user.target

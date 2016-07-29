@@ -1,2 +1,10 @@
 ---
 
+- name: restart upsource service
+  service: name=upsource state=restarted
+
+- name: start upsource service
+  service: name=upsource state=started
+
+- name: stop upsource service
+  service: name=upsource state=stopped
