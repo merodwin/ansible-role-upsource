@@ -53,10 +53,9 @@
       state: stopped
     when: latestDir.stat.exists == True
 
- # - name: rename latest to last
-  #  command:  "mv {{upsource_install_folder}}/latest {{upsource_install_folder}}/last"
- #   when: latestDir.stat.exists == True
-
+  - name: Delete last and copyt latest to last
+    shell: "rm -rf {{upsource_install_folder}}/last && mkdir {{upsource_install_folder}}/last && cp -Ra {{upsource_install_folder}}/latest/* {{upsource_install_folder}}/last"
+    when: latestDir.stat.exists == True
 
   - name: symlik to latest folder
     become: true
