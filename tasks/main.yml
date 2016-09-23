@@ -1,9 +1,6 @@
 ---
 # tasks file for ansible-role-upsource/
 
-
-
-
 - name: install unzip
   become: true
   apt: name=unzip state=latest
@@ -27,6 +24,8 @@
   stat: path="{{upsource_install_folder}}//upsource-{{upsource_version}}"
   register: installDir
 
+- name: update Linux limits (based on Upsource documentation)
+  copy: src=upsource.conf dest=/etc/security/limits.d/upsource.conf owner=root group=root mode=644
 
 - block:
 
